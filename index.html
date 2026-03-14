@@ -63,7 +63,7 @@ pointer-events: none;
 z-index: 0;
 }
 
-.container { max-width: 980px; margin: 0 auto; padding: 0 12px 80px; position: relative; z-index: 10; }
+.container { max-width: 980px; margin: 0 auto; padding: 0 12px 80px; position: relative; z-index: 1; }
 
 /* HEADER */
 .site-header {
@@ -154,7 +154,7 @@ padding: 1px 7px; font-size: 10px; margin-left: 6px; font-weight: 700;
 .card {
 background: var(–surface);
 border: 1px solid var(–border);
-border-radius: 12px;
+border-radius: 12px; overflow: hidden;
 padding: 22px;
 margin-bottom: 14px;
 box-shadow: 0 4px 24px rgba(0,0,0,0.2);
@@ -1078,16 +1078,39 @@ SORU BANKASINDA ILGILI SORULAR:
 ${bankSummary || "(Soru bankasi bos)"}
 
 SADECE JSON dondur:
-{"sayfa_eslesmeler":[{"sayfa":${pageNum},"konu_basligi":"Bu sayfanin ana konusu","tus_eslesmeler":[{"year":"TUS 20XX","soru_ozeti":"Sorunun kisa ozeti","konu":"Tip dali","iliski":"Neden bu sayfayla iliskili"}],"onem_seviyesi":"yuksek/orta/dusuk"}],"ozet_maddeler":["madde 1","madde 2"],"anahtar_kavramlar":[{"isim":"kavram","aciklama":"tanim"}],"yeni_tus_sorulari":[{"soru":"Soru?","secenekler":["A) ...","B) ...","C) ...","D) ...","E) ..."],"dogru":"A","aciklama":"Aciklama"}]}`;
-  const res = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: {"Content-Type":"application/json","x-api-key":apiKey,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
-    body: JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:2000,messages:[{role:"user",content:[{type:"image",source:{type:"base64",media_type:"image/jpeg",data:base64}},{type:"text",text:prompt}]}]})
+{
+  "sayfa_eslesmeler": [{"sayfa": ${pageNum}, "konu_basligi": "Ana konu", "tus_eslesmeler": [{"year": "TUS 20XX", "soru_ozeti": "Ozet", "konu": "Tip dali", "iliski": "Iliski"}], "onem_seviyesi": "yuksek"}],
+  "ozet_maddeler": ["madde 1", "madde 2"],
+  "anahtar_kavramlar": [{"isim": "kavram", "aciklama": "tanim"}],
+  "yeni_tus_sorulari": [{"soru": "Soru?", "secenekler": ["A) ...", "B) ...", "C) ...", "D) ...", "E) ..."], "dogru": "A", "aciklama": "Aciklama"}]
+}`;
+
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 2000,
+      messages: [{
+        role: 'user',
+        content: [
+          { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: base64 } },
+          { type: 'text', text: prompt }
+        ]
+      }]
+    })
   });
-  if (!res.ok) { const e = await res.json(); throw new Error(e.error?.message || "API hatasi"); }
+
+  if (!res.ok) { const e = await res.json(); throw new Error(e.error?.message || 'API hatasi'); }
   const data = await res.json();
-  return safeParseJSON(data.content[0]?.text || "{}") || {sayfa_eslesmeler:[],ozet_maddeler:[],anahtar_kavramlar:[],yeni_tus_sorulari:[]};
+  return safeParseJSON(data.content[0]?.text || '{}') || { sayfa_eslesmeler: [], ozet_maddeler: [], anahtar_kavramlar: [], yeni_tus_sorulari: [] };
 }
+
 
 function buildBankSummary(text) {
   // Simple keyword matching to find relevant bank questions
@@ -1319,10 +1342,3 @@ function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
 
 </body>
 </html>
-<style>
-.opt-item, .btn, .drop-zone, input, select, .nav-tab {
-  position: relative;
-  z-index: 20 !important;
-  pointer-events: auto !important;
-}
-</style>
