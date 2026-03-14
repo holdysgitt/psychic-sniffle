@@ -1,0 +1,1215 @@
+<!DOCTYPE html>
+
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TUS Asistanı Pro</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Raleway:wght@300;400;600;700;800&family=Source+Serif+4:ital,wght@0,300;0,600;1,300&display=swap');
+
+:root {
+–bg: #0a1628;
+–surface: #0f2044;
+–surface2: #132652;
+–surface3: #1a3266;
+–border: #1e3a72;
+–accent: #00b4d8;
+–accent2: #48cae4;
+–accent3: #0077b6;
+–text: #e8f4fd;
+–muted: #6b9ab8;
+–success: #06d6a0;
+–danger: #ef476f;
+–gold: #ffd166;
+–red-cross: #ef476f;
+}
+
+- { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+background: var(–bg);
+color: var(–text);
+font-family: ‘Raleway’, sans-serif;
+min-height: 100vh;
+position: relative;
+overflow-x: hidden;
+}
+
+/* Animated medical background */
+body::before {
+content: ‘’;
+position: fixed;
+inset: 0;
+background:
+radial-gradient(ellipse 80% 60% at 0% 0%, rgba(0,119,182,0.15) 0%, transparent 55%),
+radial-gradient(ellipse 60% 50% at 100% 100%, rgba(0,180,216,0.1) 0%, transparent 55%),
+radial-gradient(ellipse 40% 40% at 50% 50%, rgba(6,214,160,0.04) 0%, transparent 60%);
+pointer-events: none;
+z-index: 0;
+}
+
+/* Medical grid lines */
+body::after {
+content: ‘’;
+position: fixed;
+inset: 0;
+background-image:
+linear-gradient(rgba(0,180,216,0.03) 1px, transparent 1px),
+linear-gradient(90deg, rgba(0,180,216,0.03) 1px, transparent 1px);
+background-size: 40px 40px;
+pointer-events: none;
+z-index: 0;
+}
+
+.container { max-width: 980px; margin: 0 auto; padding: 0 20px 80px; position: relative; z-index: 1; }
+
+/* HEADER */
+.site-header {
+background: linear-gradient(135deg, #051020 0%, #0a1e40 50%, #051830 100%);
+border-bottom: 1px solid var(–border);
+padding: 0 20px;
+margin: 0 -20px 32px;
+position: relative;
+overflow: hidden;
+}
+
+.site-header::before {
+content: ‘’;
+position: absolute;
+top: 0; left: 0; right: 0; bottom: 0;
+background: linear-gradient(90deg, transparent, rgba(0,180,216,0.05), transparent);
+animation: scanline 4s ease infinite;
+}
+
+@keyframes scanline {
+0% { transform: translateX(-100%); }
+100% { transform: translateX(100%); }
+}
+
+.header-inner {
+max-width: 980px;
+margin: 0 auto;
+display: flex;
+align-items: center;
+justify-content: space-between;
+padding: 18px 0;
+gap: 20px;
+}
+
+.header-left { display: flex; align-items: center; gap: 16px; }
+
+.cross-icon {
+width: 42px; height: 42px;
+background: var(–accent);
+border-radius: 8px;
+display: flex; align-items: center; justify-content: center;
+font-size: 22px;
+box-shadow: 0 0 20px rgba(0,180,216,0.4);
+flex-shrink: 0;
+animation: pulse-glow 3s ease infinite;
+}
+
+@keyframes pulse-glow {
+0%,100% { box-shadow: 0 0 20px rgba(0,180,216,0.4); }
+50% { box-shadow: 0 0 35px rgba(0,180,216,0.7); }
+}
+
+.header-title { font-size: clamp(18px, 3vw, 26px); font-weight: 800; letter-spacing: -0.02em; }
+.header-title span { color: var(–accent); }
+.header-sub { font-size: 11px; color: var(–muted); font-weight: 300; letter-spacing: 0.08em; text-transform: uppercase; margin-top: 2px; }
+
+.header-right { display: flex; align-items: center; gap: 12px; }
+.status-pill {
+display: flex; align-items: center; gap: 6px;
+background: rgba(6,214,160,0.1); border: 1px solid rgba(6,214,160,0.2);
+border-radius: 100px; padding: 5px 12px; font-size: 11px; color: var(–success);
+}
+.status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(–success); animation: blink 2s ease infinite; }
+@keyframes blink { 0%,100%{opacity:1;} 50%{opacity:0.3;} }
+
+/* NAV */
+.nav {
+display: flex; gap: 0; margin-bottom: 24px;
+background: var(–surface); border: 1px solid var(–border);
+border-radius: 10px; padding: 4px; overflow-x: auto;
+}
+.nav-tab {
+flex: 1; padding: 10px 20px; font-size: 13px; font-weight: 600;
+cursor: pointer; color: var(–muted); border-radius: 7px;
+transition: all 0.2s; user-select: none; text-align: center; white-space: nowrap;
+letter-spacing: 0.02em;
+}
+.nav-tab.active { background: var(–accent3); color: #fff; box-shadow: 0 2px 12px rgba(0,119,182,0.4); }
+.nav-tab .count {
+background: var(–accent); color: var(–bg); border-radius: 100px;
+padding: 1px 7px; font-size: 10px; margin-left: 6px; font-weight: 700;
+}
+
+.page { display: none; animation: fadeUp 0.3s ease both; }
+.page.active { display: block; }
+
+/* CARD */
+.card {
+background: var(–surface);
+border: 1px solid var(–border);
+border-radius: 12px;
+padding: 22px;
+margin-bottom: 14px;
+box-shadow: 0 4px 24px rgba(0,0,0,0.2);
+position: relative;
+overflow: hidden;
+}
+.card::before {
+content: ‘’;
+position: absolute;
+top: 0; left: 0; right: 0;
+height: 2px;
+background: linear-gradient(90deg, transparent, var(–accent), transparent);
+opacity: 0.4;
+}
+
+.card-label {
+font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase;
+color: var(–accent); font-weight: 700; margin-bottom: 14px;
+display: flex; align-items: center; gap: 8px;
+}
+.card-label::after { content: ‘’; flex: 1; height: 1px; background: var(–border); }
+
+/* Inputs */
+.row { display: flex; gap: 10px; }
+input[type=“password”], input[type=“text”], select {
+flex: 1; background: var(–surface2); border: 1px solid var(–border);
+border-radius: 8px; padding: 11px 14px; color: var(–text);
+font-family: ‘Raleway’, sans-serif; font-size: 13px; outline: none;
+transition: border-color 0.2s, box-shadow 0.2s;
+}
+input:focus, select:focus {
+border-color: var(–accent);
+box-shadow: 0 0 0 3px rgba(0,180,216,0.1);
+}
+select { cursor: pointer; }
+select option { background: var(–surface2); }
+
+.btn {
+background: linear-gradient(135deg, var(–accent3), var(–accent));
+color: #fff; border: none; border-radius: 8px;
+padding: 11px 20px; font-family: ‘Raleway’, sans-serif;
+font-size: 13px; font-weight: 600; cursor: pointer;
+transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s;
+white-space: nowrap; letter-spacing: 0.03em;
+box-shadow: 0 2px 12px rgba(0,180,216,0.3);
+}
+.btn:hover { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 4px 20px rgba(0,180,216,0.4); }
+.btn:active { transform: translateY(0); }
+.btn:disabled { opacity: 0.3; cursor: not-allowed; transform: none; box-shadow: none; }
+.btn-sm { padding: 7px 12px; font-size: 11px; }
+.btn-outline { background: transparent; border: 1px solid var(–border); color: var(–muted); box-shadow: none; }
+.btn-outline:hover { border-color: var(–accent); color: var(–accent); opacity: 1; }
+.btn-danger { background: linear-gradient(135deg, #c0392b, var(–danger)); }
+
+/* Drop zone */
+.drop-zone {
+border: 2px dashed var(–border); border-radius: 10px; padding: 36px 20px;
+text-align: center; cursor: pointer; transition: all 0.2s;
+position: relative; background: var(–surface2);
+}
+.drop-zone:hover, .drop-zone.dragover {
+border-color: var(–accent);
+background: rgba(0,180,216,0.06);
+box-shadow: 0 0 20px rgba(0,180,216,0.1);
+}
+.drop-zone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.drop-icon { font-size: 36px; margin-bottom: 10px; display: block; }
+.drop-title { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+.drop-sub { color: var(–muted); font-size: 12px; }
+
+.file-chip {
+display: inline-flex; align-items: center; gap: 8px;
+background: rgba(0,180,216,0.1); border: 1px solid rgba(0,180,216,0.25);
+border-radius: 8px; padding: 7px 12px; font-size: 12px; margin-top: 10px;
+color: var(–accent2);
+}
+
+.status-ok { color: var(–success); font-size: 12px; margin-top: 7px; }
+.status-err { color: var(–danger); font-size: 12px; margin-top: 7px; }
+
+/* Progress */
+.prog-wrap { background: var(–surface2); border-radius: 100px; height: 6px; margin: 12px 0; overflow: hidden; }
+.prog-bar {
+height: 100%; border-radius: 100px; width: 0%; transition: width 0.4s;
+background: linear-gradient(90deg, var(–accent3), var(–accent), var(–accent2));
+box-shadow: 0 0 10px rgba(0,180,216,0.5);
+}
+
+.step-list { list-style: none; }
+.step-item {
+display: flex; align-items: center; gap: 12px; padding: 9px 0;
+border-bottom: 1px solid var(–border); font-size: 13px; color: var(–muted); transition: color 0.3s;
+}
+.step-item:last-child { border-bottom: none; }
+.step-item.active { color: var(–text); }
+.step-item.done { color: var(–success); }
+.step-dot {
+width: 24px; height: 24px; border-radius: 50%; border: 1px solid var(–border);
+display: flex; align-items: center; justify-content: center;
+font-size: 9px; flex-shrink: 0; transition: all 0.3s;
+}
+.step-item.active .step-dot { border-color: var(–accent); color: var(–accent); animation: spin 1.2s linear infinite; box-shadow: 0 0 8px rgba(0,180,216,0.4); }
+.step-item.done .step-dot { border-color: var(–success); background: var(–success); color: var(–bg); }
+
+/* Bank stats */
+.bank-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px; }
+.stat-box {
+background: var(–surface2); border: 1px solid var(–border); border-radius: 10px;
+padding: 16px; text-align: center; position: relative; overflow: hidden;
+}
+.stat-box::after {
+content: ‘’; position: absolute; bottom: 0; left: 0; right: 0; height: 2px;
+background: linear-gradient(90deg, transparent, var(–accent), transparent);
+}
+.stat-num { font-size: 30px; font-weight: 800; color: var(–accent); line-height: 1; }
+.stat-label { font-size: 11px; color: var(–muted); margin-top: 4px; letter-spacing: 0.05em; text-transform: uppercase; }
+
+.year-list { list-style: none; }
+.year-item {
+display: flex; align-items: center; justify-content: space-between;
+padding: 10px 0; border-bottom: 1px solid var(–border); font-size: 13px;
+}
+.year-item:last-child { border-bottom: none; }
+.year-badge {
+background: linear-gradient(135deg, var(–accent3), var(–accent));
+color: #fff; border-radius: 6px; padding: 3px 10px; font-size: 11px; font-weight: 700;
+}
+.year-count { color: var(–muted); font-size: 12px; }
+
+/* Results */
+.match-card {
+background: var(–surface); border: 1px solid var(–border); border-radius: 12px;
+margin-bottom: 12px; overflow: hidden;
+box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+}
+.match-header {
+background: linear-gradient(135deg, rgba(0,119,182,0.2), rgba(0,180,216,0.08));
+padding: 14px 18px; border-bottom: 1px solid var(–border);
+display: flex; align-items: center; justify-content: space-between; gap: 12px;
+}
+.match-page { font-size: 22px; font-weight: 800; color: var(–accent); opacity: 0.5; }
+.match-title { font-weight: 700; font-size: 14px; flex: 1; }
+.match-body { padding: 16px 18px; }
+
+.tus-hit {
+background: rgba(0,180,216,0.05); border: 1px solid rgba(0,180,216,0.15);
+border-left: 3px solid var(–accent); border-radius: 8px;
+padding: 10px 14px; margin-bottom: 8px; font-size: 13px;
+}
+.tus-hit-header { display: flex; gap: 8px; align-items: center; margin-bottom: 6px; }
+.tus-tag {
+background: linear-gradient(135deg, var(–accent3), var(–accent));
+color: #fff; border-radius: 4px; padding: 2px 8px;
+font-size: 10px; font-weight: 700; letter-spacing: 0.05em;
+}
+.tus-hit-q { color: var(–text); line-height: 1.5; }
+
+.summary-list { list-style: none; }
+.s-item { display: flex; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(–border); font-size: 13px; line-height: 1.6; }
+.s-item:last-child { border-bottom: none; }
+.s-bullet { color: var(–accent); font-weight: 800; flex-shrink: 0; }
+
+.concepts-wrap { display: flex; flex-wrap: wrap; gap: 8px; }
+.concept-tag {
+background: var(–surface2); border: 1px solid var(–border); border-radius: 8px;
+padding: 7px 13px; font-size: 12px;
+}
+.concept-tag strong { display: block; font-size: 12px; color: var(–accent2); }
+.concept-tag span { color: var(–muted); font-size: 11px; }
+
+.q-list { list-style: none; }
+.q-item { background: var(–surface2); border: 1px solid var(–border); border-radius: 10px; padding: 14px 16px; margin-bottom: 10px; }
+.q-text { font-size: 13px; font-weight: 600; margin-bottom: 10px; line-height: 1.5; }
+.q-opts { list-style: none; }
+.q-opt { font-size: 12px; padding: 7px 11px; border-radius: 6px; margin-bottom: 4px; color: var(–muted); border: 1px solid transparent; transition: all 0.2s; cursor: pointer; }
+.q-opt:hover { background: var(–surface3); border-color: var(–border); color: var(–text); }
+.q-opt.correct { background: rgba(6,214,160,0.1); border-color: var(–success); color: var(–success); }
+.q-opt.wrong { background: rgba(239,71,111,0.1); border-color: var(–danger); color: var(–danger); }
+.q-exp { display: none; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(–border); font-size: 12px; color: var(–muted); line-height: 1.6; }
+
+.err-box { background: rgba(239,71,111,0.08); border: 1px solid rgba(239,71,111,0.3); border-radius: 8px; padding: 12px 16px; color: var(–danger); font-size: 12px; margin-top: 12px; display: none; }
+
+.empty-state { text-align: center; padding: 48px 20px; color: var(–muted); font-size: 14px; }
+.empty-icon { font-size: 40px; display: block; margin-bottom: 12px; }
+
+.opts-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 8px; }
+.opt-item {
+background: var(–surface2); border: 1px solid var(–border); border-radius: 8px;
+padding: 10px 13px; cursor: pointer; transition: all 0.2s; user-select: none;
+}
+.opt-item.active { border-color: var(–accent); background: rgba(0,180,216,0.08); }
+.opt-title { font-size: 12px; font-weight: 600; }
+.opt-desc { font-size: 11px; color: var(–muted); margin-top: 1px; }
+.opt-item.active .opt-title { color: var(–accent2); }
+
+.tabs { display: flex; border-bottom: 1px solid var(–border); margin-bottom: 16px; overflow-x: auto; }
+.tab { padding: 9px 16px; font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer; color: var(–muted); border-bottom: 2px solid transparent; margin-bottom: -1px; transition: all 0.2s; white-space: nowrap; }
+.tab.active { color: var(–accent); border-bottom-color: var(–accent); }
+.tab-content { display: none; }
+.tab-content.active { display: block; animation: fadeUp 0.2s ease both; }
+
+@keyframes fadeDown { from { opacity:0; transform:translateY(-14px); } to { opacity:1; transform:translateY(0); } }
+@keyframes fadeUp { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:translateY(0); } }
+@keyframes spin { from { transform:rotate(0deg); } to { transform:rotate(360deg); } }
+
+@media(max-width:600px){ .bank-stats{grid-template-columns:repeat(2,1fr);} .opts-grid{grid-template-columns:1fr;} .row{flex-direction:column;} .header-right{display:none;} }
+</style>
+
+</head>
+<body>
+
+<!-- HOSPITAL HEADER -->
+
+<div class="site-header">
+  <div class="header-inner">
+    <div class="header-left">
+      <div class="cross-icon">⚕️</div>
+      <div>
+        <div class="header-title">TUS <span>Asistan</span> Pro</div>
+        <div class="header-sub">Tıbbi Eğitim Platformu • AI Destekli</div>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="status-pill">
+        <div class="status-dot"></div>
+        Sistem Aktif
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+
+<!-- API KEY -->
+
+<div class="card">
+  <div class="card-label">🔑 Anthropic API Key</div>
+  <div class="row">
+    <input type="password" id="apiKey" placeholder="sk-ant-api03-..." />
+    <button class="btn" onclick="saveKey()">Kaydet</button>
+  </div>
+  <div id="keyStatus"></div>
+</div>
+
+<!-- NAV -->
+
+<div class="nav">
+  <div class="nav-tab active" onclick="switchPage('bank', this)">📚 Soru Bankası <span class="count" id="bankCount">0</span></div>
+  <div class="nav-tab" onclick="switchPage('analyze', this)">🔬 Slayt Analizi</div>
+</div>
+
+<!-- PAGE: SORU BANKASI -->
+
+<div class="page active" id="page-bank">
+
+  <!-- Bank stats -->
+
+  <div class="bank-stats" id="bankStats" style="display:none">
+    <div class="stat-box"><div class="stat-num" id="statTotal">0</div><div class="stat-label">Toplam Soru</div></div>
+    <div class="stat-box"><div class="stat-num" id="statYears">0</div><div class="stat-label">Yıl</div></div>
+    <div class="stat-box"><div class="stat-num" id="statTopics">0</div><div class="stat-label">Konu</div></div>
+  </div>
+
+  <div class="card" id="bankListCard" style="display:none">
+    <div class="card-label">📋 Yüklü Yıllar</div>
+    <ul class="year-list" id="yearList"></ul>
+    <div style="margin-top:14px">
+      <button class="btn btn-danger btn-sm" onclick="clearBank()">🗑 Soru Bankasını Temizle</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-label">➕ Yeni TUS Yılı Ekle</div>
+    <div class="row" style="margin-bottom:12px">
+      <input type="text" id="tusYear" placeholder="Örn: TUS 2023/1" style="flex:none;width:160px" />
+      <select id="tusDoctor">
+        <option value="temel">Temel Bilimler</option>
+        <option value="klinik">Klinik Bilimler</option>
+        <option value="karisik">Karışık</option>
+      </select>
+    </div>
+
+```
+<!-- Format seçici -->
+<div style="display:flex;gap:8px;margin-bottom:12px">
+  <div class="opt-item active" id="fmtPdf" onclick="setFmt('pdf')" style="flex:1;text-align:center;padding:10px">
+    <div class="opt-title">📄 PDF</div><div class="opt-desc">Dijital kitapçık</div>
+  </div>
+  <div class="opt-item" id="fmtJpeg" onclick="setFmt('jpeg')" style="flex:1;text-align:center;padding:10px">
+    <div class="opt-title">📸 Fotoğraf</div><div class="opt-desc">JPEG / fotoğraf</div>
+  </div>
+</div>
+
+<!-- PDF -->
+<div id="pdfDropWrap">
+  <div class="drop-zone" id="tusDrop">
+    <input type="file" id="tusFile" accept=".pdf" onchange="handleTusFile(this.files[0])" />
+    <span class="drop-icon">📝</span>
+    <div class="drop-title">TUS Soruları PDF</div>
+    <div class="drop-sub">Soru ve cevapları içeren PDF</div>
+  </div>
+  <div id="tusFileChip" style="display:none"></div>
+</div>
+
+<!-- JPEG -->
+<div id="jpegDropWrap" style="display:none">
+  <div class="drop-zone" id="jpegDrop" onclick="document.getElementById('jpegFiles').click()">
+    <input type="file" id="jpegFiles" accept="image/*" multiple style="display:none" onchange="handleJpegFiles(this.files)" />
+    <span class="drop-icon">📸</span>
+    <div class="drop-title">Kitapçık Fotoğrafları</div>
+    <div class="drop-sub">Birden fazla JPEG seçin • Claude görüntüleri okuyarak soruları çıkarır</div>
+  </div>
+  <div id="jpegPreviewList" style="margin-top:10px;display:flex;flex-wrap:wrap;gap:6px"></div>
+</div>
+
+<div class="err-box" id="bankErr"></div>
+<div style="margin-top:14px">
+  <button class="btn" id="addBankBtn" onclick="addToBank()" disabled>+ Soru Bankasına Ekle</button>
+</div>
+
+<!-- Bank progress -->
+<div id="bankProgress" style="display:none; margin-top:16px">
+  <div class="prog-wrap"><div class="prog-bar" id="bankProgBar"></div></div>
+  <div id="bankProgText" style="font-size:12px; color:var(--muted); margin-top:6px"></div>
+</div>
+```
+
+  </div>
+
+</div>
+
+<!-- PAGE: SLAYT ANALİZİ -->
+
+<div class="page" id="page-analyze">
+
+  <div id="noBankWarning" class="card" style="display:none">
+    <div class="empty-state">
+      <span class="empty-icon">📚</span>
+      Önce <strong>Soru Bankası</strong> sekmesinden TUS soruları yükleyin.<br>
+      <span style="font-size:12px;color:var(--muted);margin-top:6px;display:block">Bankada soru olmadan eşleştirme yapılamaz.</span>
+    </div>
+  </div>
+
+  <div id="analyzeContent">
+    <div class="card">
+      <div class="card-label">📄 Ders Slaytı (PDF)</div>
+      <div class="drop-zone" id="slideDrop">
+        <input type="file" id="slideFile" accept=".pdf" onchange="handleSlideFile(this.files[0])" />
+        <span class="drop-icon">📋</span>
+        <div class="drop-title">Ders PDF'ini buraya bırak</div>
+        <div class="drop-sub">Büyük dosyalar otomatik bölünür</div>
+      </div>
+      <div id="slideFileChip" style="display:none"></div>
+      <div class="err-box" id="slideErr"></div>
+    </div>
+
+```
+<div class="card">
+  <div class="card-label">⚙️ Analiz Seçenekleri</div>
+  <div class="opts-grid">
+    <div class="opt-item active" data-opt="matching" onclick="toggleOpt(this)">
+      <div class="opt-title">🎯 TUS Eşleştirme</div>
+      <div class="opt-desc">Hangi sayfadan soru çıkmış</div>
+    </div>
+    <div class="opt-item active" data-opt="ozet" onclick="toggleOpt(this)">
+      <div class="opt-title">📝 Özet</div>
+      <div class="opt-desc">Konu özeti</div>
+    </div>
+    <div class="opt-item active" data-opt="kavramlar" onclick="toggleOpt(this)">
+      <div class="opt-title">🎯 Anahtar Kavramlar</div>
+      <div class="opt-desc">Önemli terimler</div>
+    </div>
+    <div class="opt-item active" data-opt="newq" onclick="toggleOpt(this)">
+      <div class="opt-title">❓ Yeni TUS Soruları</div>
+      <div class="opt-desc">AI tarafından üretilmiş</div>
+    </div>
+  </div>
+</div>
+
+<button class="btn" id="analyzeBtn" onclick="analyzeSlide()" disabled
+  style="width:100%;padding:15px;font-size:14px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;border-radius:3px;margin-bottom:16px">
+  Analiz Et →
+</button>
+
+<!-- Analyze progress -->
+<div class="card" id="analyzeProgress" style="display:none">
+  <div class="card-label">⏳ Analiz Ediliyor</div>
+  <div id="analyzeInfo" style="font-size:13px;color:var(--muted);margin-bottom:10px"></div>
+  <div class="prog-wrap"><div class="prog-bar" id="analyzeProgBar"></div></div>
+  <ul class="step-list" id="analyzeSteps"></ul>
+</div>
+
+<!-- Results -->
+<div id="analyzeResults" style="display:none; animation: fadeUp 0.4s ease both;">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px">
+    <div style="font-family:'Libre Baskerville',serif;font-size:22px">📊 Analiz Sonuçları</div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-outline btn-sm" onclick="copyResults()">📋 Kopyala</button>
+      <button class="btn btn-sm" onclick="resetAnalysis()">🔄 Yeni Slayt</button>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('matching',this)">TUS Eşleştirme</div>
+    <div class="tab" onclick="switchTab('ozet',this)">Özet</div>
+    <div class="tab" onclick="switchTab('kavramlar',this)">Kavramlar</div>
+    <div class="tab" onclick="switchTab('newq',this)">Yeni Sorular</div>
+  </div>
+  <div class="tab-content active" id="rtab-matching"></div>
+  <div class="tab-content" id="rtab-ozet"></div>
+  <div class="tab-content" id="rtab-kavramlar"></div>
+  <div class="tab-content" id="rtab-newq"></div>
+</div>
+```
+
+  </div>
+
+</div>
+</div>
+
+<script>
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+const CHUNK = 30;
+let apiKey = localStorage.getItem('tus_pro_key') || '';
+let selectedTusFile = null;
+let selectedSlideFile = null;
+let opts = { matching: true, ozet: true, kavramlar: true, newq: true };
+
+// Question bank stored in localStorage as JSON
+// Structure: { questions: [{year, donem, konu, soru, cevap, aciklama}], years: {year: count} }
+let bank = loadBank();
+
+if (apiKey) {
+  document.getElementById('apiKey').value = apiKey;
+  document.getElementById('keyStatus').innerHTML = '<div class="status-ok">✅ Key kayıtlı</div>';
+}
+
+updateBankUI();
+
+function saveKey() {
+  const v = document.getElementById('apiKey').value.trim();
+  if (!v.startsWith('sk-ant')) {
+    document.getElementById('keyStatus').innerHTML = '<div class="status-err">❌ Geçersiz format</div>';
+    return;
+  }
+  apiKey = v;
+  localStorage.setItem('tus_pro_key', v);
+  document.getElementById('keyStatus').innerHTML = '<div class="status-ok">✅ Key kaydedildi!</div>';
+  checkAnalyzeReady();
+}
+
+function loadBank() {
+  try {
+    const raw = localStorage.getItem('tus_question_bank');
+    return raw ? JSON.parse(raw) : { questions: [], years: {} };
+  } catch { return { questions: [], years: {} }; }
+}
+
+function saveBank() {
+  localStorage.setItem('tus_question_bank', JSON.stringify(bank));
+}
+
+function clearBank() {
+  if (!confirm('Tüm soru bankası silinecek. Emin misiniz?')) return;
+  bank = { questions: [], years: {} };
+  saveBank();
+  updateBankUI();
+}
+
+function updateBankUI() {
+  const total = bank.questions.length;
+  const years = Object.keys(bank.years).length;
+  const topics = new Set(bank.questions.map(q => q.konu)).size;
+
+  document.getElementById('bankCount').textContent = total;
+  document.getElementById('statTotal').textContent = total;
+  document.getElementById('statYears').textContent = years;
+  document.getElementById('statTopics').textContent = topics;
+
+  if (total > 0) {
+    document.getElementById('bankStats').style.display = 'grid';
+    document.getElementById('bankListCard').style.display = 'block';
+    const yearList = document.getElementById('yearList');
+    yearList.innerHTML = Object.entries(bank.years).map(([y, c]) =>
+      `<li class="year-item"><span class="year-badge">${y}</span><span class="year-count">${c} soru</span>
+      <button class="btn btn-outline btn-sm" onclick="deleteYear('${y}')">Sil</button></li>`
+    ).join('');
+  } else {
+    document.getElementById('bankStats').style.display = 'none';
+    document.getElementById('bankListCard').style.display = 'none';
+  }
+  checkAnalyzeReady();
+}
+
+function deleteYear(year) {
+  bank.questions = bank.questions.filter(q => q.year !== year);
+  delete bank.years[year];
+  saveBank();
+  updateBankUI();
+}
+
+function switchPage(name, el) {
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('page-' + name).classList.add('active');
+  if (name === 'analyze') {
+    document.getElementById('noBankWarning').style.display = bank.questions.length === 0 ? 'block' : 'none';
+    document.getElementById('analyzeContent').style.display = bank.questions.length === 0 ? 'none' : 'block';
+  }
+}
+
+function toggleOpt(el) {
+  const o = el.dataset.opt;
+  opts[o] = !opts[o];
+  el.classList.toggle('active', opts[o]);
+}
+
+// ── FORMAT TOGGLE ──
+let uploadFmt = 'pdf';
+let selectedJpegs = [];
+
+function setFmt(fmt) {
+  uploadFmt = fmt;
+  document.getElementById('fmtPdf').classList.toggle('active', fmt === 'pdf');
+  document.getElementById('fmtJpeg').classList.toggle('active', fmt === 'jpeg');
+  document.getElementById('pdfDropWrap').style.display = fmt === 'pdf' ? 'block' : 'none';
+  document.getElementById('jpegDropWrap').style.display = fmt === 'jpeg' ? 'block' : 'none';
+  selectedTusFile = null;
+  selectedJpegs = [];
+  document.getElementById('addBankBtn').disabled = true;
+}
+
+function handleJpegFiles(files) {
+  selectedJpegs = Array.from(files);
+  if (selectedJpegs.length === 0) return;
+  const preview = document.getElementById('jpegPreviewList');
+  preview.innerHTML = selectedJpegs.map((f, i) => `
+    <div class="file-chip">📸 ${f.name} <span style="color:var(--muted);font-size:10px">(${(f.size/1024).toFixed(0)}KB)</span></div>
+  `).join('');
+  hideBankErr();
+  checkBankReady();
+}
+
+// ── TUS FILE HANDLING ──
+function handleTusFile(file) {
+  if (!file || !file.name.endsWith('.pdf')) { showBankErr('Sadece PDF yükleyebilirsiniz.'); return; }
+  selectedTusFile = file;
+  document.getElementById('tusFileChip').style.display = 'block';
+  document.getElementById('tusFileChip').innerHTML = `<div class="file-chip">📝 ${file.name} <button onclick="clearTusFile()" style="background:none;border:none;cursor:pointer;color:var(--muted);margin-left:4px">✕</button></div>`;
+  hideBankErr();
+  checkBankReady();
+}
+
+function clearTusFile() {
+  selectedTusFile = null;
+  document.getElementById('tusFileChip').style.display = 'none';
+  document.getElementById('tusFile').value = '';
+  document.getElementById('addBankBtn').disabled = true;
+}
+
+function checkBankReady() {
+  const ready = uploadFmt === 'pdf' ? (selectedTusFile && apiKey) : (selectedJpegs.length > 0 && apiKey);
+  document.getElementById('addBankBtn').disabled = !ready;
+}
+
+// ── SLIDE FILE HANDLING ──
+function handleSlideFile(file) {
+  if (!file || !file.name.endsWith('.pdf')) { showSlideErr('Sadece PDF yükleyebilirsiniz.'); return; }
+  selectedSlideFile = file;
+  document.getElementById('slideFileChip').style.display = 'block';
+  document.getElementById('slideFileChip').innerHTML = `<div class="file-chip">📋 ${file.name} <button onclick="clearSlideFile()" style="background:none;border:none;cursor:pointer;color:var(--muted);margin-left:4px">✕</button></div>`;
+  hideSlideErr();
+  checkAnalyzeReady();
+}
+
+function clearSlideFile() {
+  selectedSlideFile = null;
+  document.getElementById('slideFileChip').style.display = 'none';
+  document.getElementById('slideFile').value = '';
+  document.getElementById('analyzeBtn').disabled = true;
+}
+
+function checkAnalyzeReady() {
+  document.getElementById('analyzeBtn').disabled = !(selectedSlideFile && apiKey && bank.questions.length > 0);
+}
+
+// Drag & drop
+setupDrop('tusDrop', f => handleTusFile(f));
+setupDrop('slideDrop', f => handleSlideFile(f));
+
+function setupDrop(id, cb) {
+  const el = document.getElementById(id);
+  el.addEventListener('dragover', e => { e.preventDefault(); el.classList.add('dragover'); });
+  el.addEventListener('dragleave', () => el.classList.remove('dragover'));
+  el.addEventListener('drop', e => { e.preventDefault(); el.classList.remove('dragover'); if (e.dataTransfer.files[0]) cb(e.dataTransfer.files[0]); });
+}
+
+function showBankErr(m) { const b = document.getElementById('bankErr'); b.textContent = '⚠️ ' + m; b.style.display = 'block'; }
+function hideBankErr() { document.getElementById('bankErr').style.display = 'none'; }
+function showSlideErr(m) { const b = document.getElementById('slideErr'); b.textContent = '⚠️ ' + m; b.style.display = 'block'; }
+function hideSlideErr() { document.getElementById('slideErr').style.display = 'none'; }
+
+// ── ADD TO BANK ──
+async function addToBank() {
+  if (!apiKey) return;
+  if (uploadFmt === 'pdf' && !selectedTusFile) return;
+  if (uploadFmt === 'jpeg' && selectedJpegs.length === 0) return;
+
+  const year = document.getElementById('tusYear').value.trim() || 'Bilinmeyen';
+  hideBankErr();
+  document.getElementById('addBankBtn').disabled = true;
+  document.getElementById('bankProgress').style.display = 'block';
+
+  try {
+    let questions = [];
+
+    if (uploadFmt === 'pdf') {
+      setBankProg(10, 'PDF okunuyor...');
+      const text = await pdfToText(selectedTusFile);
+      setBankProg(40, 'Sorular çıkarılıyor...');
+      questions = await extractQuestionsFromText(text, year);
+    } else {
+      // JPEG mode - process images with Claude vision
+      setBankProg(10, `${selectedJpegs.length} fotoğraf işlenecek...`);
+      for (let i = 0; i < selectedJpegs.length; i++) {
+        setBankProg(10 + Math.round((i / selectedJpegs.length) * 75), `Fotoğraf ${i+1}/${selectedJpegs.length} okunuyor...`);
+        const qs = await extractQuestionsFromImage(selectedJpegs[i], year);
+        questions.push(...qs);
+      }
+    }
+
+    setBankProg(90, 'Bankaya kaydediliyor...');
+    bank.questions.push(...questions);
+    bank.years[year] = (bank.years[year] || 0) + questions.length;
+    saveBank();
+    setBankProg(100, `✅ ${questions.length} soru eklendi!`);
+    await delay(1000);
+    document.getElementById('bankProgress').style.display = 'none';
+    clearTusFile();
+    selectedJpegs = [];
+    document.getElementById('jpegPreviewList').innerHTML = '';
+    updateBankUI();
+  } catch(e) {
+    document.getElementById('bankProgress').style.display = 'none';
+    showBankErr((e.message || 'Hata oluştu.') + ' — Detay: ' + JSON.stringify(e));
+    document.getElementById('addBankBtn').disabled = false;
+  }
+}
+
+async function extractQuestionsFromImage(imageFile, year) {
+  // Resize image if too large, convert to jpeg
+  const base64 = await imageToBase64Resized(imageFile);
+  const mimeType = 'image/jpeg';
+
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 2000,
+      messages: [{
+        role: 'user',
+        content: [
+          { type: 'image', source: { type: 'base64', media_type: mimeType, data: base64 } },
+          { type: 'text', text: `Bu bir TUS sınavı kitapçığı fotoğrafıdır. Yıl: ${year}
+
+Görüntüdeki tüm soruları çıkar. SADECE JSON yaz:
+{
+  "sorular": [
+    {
+      "year": "${year}",
+      "konu": "Tıp dalı (örn: Kardiyoloji, Biyokimya...)",
+      "soru": "Sorunun tam metni",
+      "secenekler": ["A) ...", "B) ...", "C) ...", "D) ...", "E) ..."],
+      "cevap": "A",
+      "aciklama": "Kısa açıklama"
+    }
+  ]
+}
+Soru bulunamazsa boş array döndür.` }
+        ]
+      }]
+    })
+  });
+
+  if (!res.ok) { const e = await res.json(); throw new Error(e.error?.message || 'API hatası'); }
+  const data = await res.json();
+  const parsed = safeParseJSON(data.content[0]?.text || '{}');
+  return parsed?.sorular || [];
+}
+
+// Resizes and converts any image to JPEG base64
+function imageToBase64Resized(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = reject;
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onerror = reject;
+      img.onload = () => {
+        const MAX = 1568;
+        let w = img.width, h = img.height;
+        if (w > MAX || h > MAX) {
+          if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
+          else { w = Math.round(w * MAX / h); h = MAX; }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, w, h);
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+        resolve(dataUrl.split(',')[1]);
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function fileToBase64(file) {
+  return new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = () => res(r.result.split(',')[1]);
+    r.onerror = rej;
+    r.readAsDataURL(file);
+  });
+}
+
+function setBankProg(pct, text) {
+  document.getElementById('bankProgBar').style.width = pct + '%';
+  document.getElementById('bankProgText').textContent = text;
+}
+
+async function extractQuestionsFromText(text, year) {
+  const chunks = chunkText(text, 8000);
+  const allQ = [];
+
+  for (let i = 0; i < Math.min(chunks.length, 5); i++) {
+    const prompt = `Bu bir TUS sınavı soru kitapçığı metnidir. Yıl: ${year}
+
+METİN:
+${chunks[i]}
+
+Bu metinden soruları çıkar. SADECE JSON yaz:
+{
+  "sorular": [
+    {
+      "year": "${year}",
+      "konu": "Konunun tıp dalı (örn: Kardiyoloji, Nöroloji, Biyokimya...)",
+      "soru": "Soru metni",
+      "secenekler": ["A) ...", "B) ...", "C) ...", "D) ...", "E) ..."],
+      "cevap": "A",
+      "aciklama": "Neden bu cevap doğru (kısa)"
+    }
+  ]
+}
+Eğer net soru bulamazsan boş array döndür.`;
+
+    const res = await callAPI(prompt, 2000);
+    const parsed = safeParseJSON(res);
+    if (parsed?.sorular) allQ.push(...parsed.sorular);
+  }
+  return allQ;
+}
+
+// ── ANALYZE SLIDE ──
+async function analyzeSlide() {
+  if (!selectedSlideFile || !apiKey) return;
+  hideSlideErr();
+  document.getElementById('analyzeBtn').disabled = true;
+  document.getElementById('analyzeResults').style.display = 'none';
+  document.getElementById('analyzeProgress').style.display = 'block';
+
+  try {
+    setAnalyzeInfo('PDF okunuyor...');
+    const fullText = await pdfToText(selectedSlideFile, true); // returns pages array
+    const totalPages = fullText.length;
+    const chunkCount = Math.ceil(totalPages / CHUNK);
+
+    // Build steps
+    const stepsEl = document.getElementById('analyzeSteps');
+    stepsEl.innerHTML = '';
+    for (let i = 0; i < chunkCount; i++) {
+      const s = i * CHUNK + 1, e = Math.min((i+1)*CHUNK, totalPages);
+      stepsEl.innerHTML += `<li class="step-item" id="astep${i}"><div class="step-dot">${i+1}</div> Sayfa ${s}–${e} analiz ediliyor</li>`;
+    }
+    stepsEl.innerHTML += `<li class="step-item" id="astepFinal"><div class="step-dot">✦</div> Sonuçlar birleştiriliyor</li>`;
+
+    setAnalyzeProg(5);
+    const results = [];
+
+    for (let c = 0; c < chunkCount; c++) {
+      setAStep(c, 'active');
+      const start = c * CHUNK;
+      const end = Math.min((c+1)*CHUNK, totalPages);
+      const pages = fullText.slice(start, end);
+
+      // Build bank summary for prompt (top relevant questions)
+      const bankSummary = buildBankSummary(pages.join(' '));
+
+      const result = await analyzeChunk(pages, start + 1, bankSummary, c, chunkCount);
+      results.push(result);
+      setAStep(c, 'done');
+      setAnalyzeProg(Math.round(10 + (c+1)/chunkCount * 80));
+    }
+
+    setAStep('Final', 'active');
+    const merged = mergeAnalysis(results, fullText);
+    setAStep('Final', 'done');
+    setAnalyzeProg(100);
+    await delay(300);
+
+    document.getElementById('analyzeProgress').style.display = 'none';
+    renderAnalysis(merged);
+  } catch(e) {
+    document.getElementById('analyzeProgress').style.display = 'none';
+    showSlideErr(e.message || 'Hata oluştu.');
+    document.getElementById('analyzeBtn').disabled = false;
+  }
+}
+
+function buildBankSummary(text) {
+  // Simple keyword matching to find relevant bank questions
+  const words = text.toLowerCase().split(/\s+/).filter(w => w.length > 4);
+  const scored = bank.questions.map(q => {
+    const qText = (q.soru + ' ' + q.konu).toLowerCase();
+    const score = words.filter(w => qText.includes(w)).length;
+    return { ...q, score };
+  });
+  scored.sort((a, b) => b.score - a.score);
+  const top = scored.slice(0, 20);
+  return top.map(q => `[${q.year}] Konu:${q.konu} | Soru: ${q.soru.substring(0,100)} | Cevap: ${q.cevap}`).join('\n');
+}
+
+async function analyzeChunk(pages, startPage, bankSummary, idx, total) {
+  const pageTexts = pages.map((text, i) => `--- SAYFA ${startPage + i} ---\n${text}`).join('\n\n');
+
+  const prompt = `Tıp fakültesi ders slaytı analizi. Bu ${idx+1}. parça (toplam ${total}).
+
+SLAYT İÇERİĞİ (Sayfa ${startPage} - ${startPage + pages.length - 1}):
+${pageTexts.substring(0, 10000)}
+
+SORU BANKASINDA İLGİLİ SORULAR:
+${bankSummary || '(Henüz soru bankası boş)'}
+
+SADECE JSON döndür:
+{
+  "sayfa_eslesmeler": [
+    {
+      "sayfa": ${startPage},
+      "konu_basligi": "Bu sayfanın ana konusu",
+      "tus_eslesmeler": [
+        {
+          "year": "TUS 20XX",
+          "soru_ozeti": "Sorunun kısa özeti",
+          "konu": "Tıp dalı",
+          "iliski": "Neden bu sayfayla ilişkili"
+        }
+      ],
+      "onem_seviyesi": "yuksek/orta/dusuk"
+    }
+  ],
+  "ozet_maddeler": ["madde 1", "madde 2", "madde 3"],
+  "anahtar_kavramlar": [{"isim": "kavram", "aciklama": "tanım"}],
+  "yeni_tus_sorulari": [
+    {
+      "soru": "Soru?",
+      "secenekler": ["A) ...", "B) ...", "C) ...", "D) ...", "E) ..."],
+      "dogru": "A",
+      "aciklama": "Açıklama"
+    }
+  ]
+}`;
+
+  const res = await callAPI(prompt, 3000);
+  return safeParseJSON(res) || { sayfa_eslesmeler: [], ozet_maddeler: [], anahtar_kavramlar: [], yeni_tus_sorulari: [] };
+}
+
+function mergeAnalysis(results) {
+  const merged = { sayfa_eslesmeler: [], ozet_maddeler: [], anahtar_kavramlar: [], yeni_tus_sorulari: [] };
+  const kavSet = new Set();
+  results.forEach(r => {
+    if (r.sayfa_eslesmeler) merged.sayfa_eslesmeler.push(...r.sayfa_eslesmeler);
+    if (r.ozet_maddeler) merged.ozet_maddeler.push(...r.ozet_maddeler);
+    if (r.anahtar_kavramlar) r.anahtar_kavramlar.forEach(k => {
+      if (!kavSet.has(k.isim)) { kavSet.add(k.isim); merged.anahtar_kavramlar.push(k); }
+    });
+    if (r.yeni_tus_sorulari) merged.yeni_tus_sorulari.push(...r.yeni_tus_sorulari);
+  });
+  return merged;
+}
+
+// ── RENDER ──
+function renderAnalysis(data) {
+  // TUS Eşleştirme
+  const matchEl = document.getElementById('rtab-matching');
+  const pages = data.sayfa_eslesmeler || [];
+  const pagesWithHits = pages.filter(p => p.tus_eslesmeler?.length > 0);
+
+  if (pagesWithHits.length === 0) {
+    matchEl.innerHTML = `<div class="empty-state"><span class="empty-icon">🔍</span>Bu slaytla eşleşen TUS sorusu bulunamadı.<br><span style="font-size:12px;color:var(--muted)">Soru bankasını genişletebilirsiniz.</span></div>`;
+  } else {
+    matchEl.innerHTML = `<div style="font-size:12px;color:var(--muted);margin-bottom:14px">📌 ${pagesWithHits.length} sayfada TUS eşleşmesi bulundu</div>` +
+      pagesWithHits.map(p => `
+        <div class="match-card">
+          <div class="match-header">
+            <div class="match-page">S.${p.sayfa}</div>
+            <div class="match-title">${p.konu_basligi || ''}</div>
+            <span style="font-size:10px;padding:2px 7px;border-radius:2px;background:${p.onem_seviyesi==='yuksek'?'var(--accent)':p.onem_seviyesi==='orta'?'var(--accent2)':'var(--border)'};color:${p.onem_seviyesi==='dusuk'?'var(--muted)':'#fff'}">
+              ${p.onem_seviyesi==='yuksek'?'🔴 Yüksek':p.onem_seviyesi==='orta'?'🟡 Orta':'🟢 Düşük'}
+            </span>
+          </div>
+          <div class="match-body">
+            ${(p.tus_eslesmeler||[]).map(t => `
+              <div class="tus-hit">
+                <div class="tus-hit-header">
+                  <span class="tus-tag">${t.year}</span>
+                  <span style="font-size:11px;color:var(--muted)">${t.konu}</span>
+                </div>
+                <div class="tus-hit-q">${t.soru_ozeti}</div>
+                <div style="font-size:11px;color:var(--muted);margin-top:4px;font-style:italic">${t.iliski}</div>
+              </div>`).join('')}
+          </div>
+        </div>`).join('');
+  }
+
+  // Özet
+  const ozetEl = document.getElementById('rtab-ozet');
+  ozetEl.innerHTML = (data.ozet_maddeler||[]).length
+    ? `<ul class="summary-list">${data.ozet_maddeler.map(m => `<li class="s-item"><span class="s-bullet">§</span><span>${m}</span></li>`).join('')}</ul>`
+    : '<div class="empty-state"><span class="empty-icon">📝</span>Özet seçilmedi.</div>';
+
+  // Kavramlar
+  const kavEl = document.getElementById('rtab-kavramlar');
+  kavEl.innerHTML = (data.anahtar_kavramlar||[]).length
+    ? `<div class="concepts-wrap">${data.anahtar_kavramlar.map(k => `<div class="concept-tag"><strong>${k.isim}</strong><span>${k.aciklama}</span></div>`).join('')}</div>`
+    : '<div class="empty-state"><span class="empty-icon">🎯</span>Kavramlar seçilmedi.</div>';
+
+  // Yeni Sorular
+  const qEl = document.getElementById('rtab-newq');
+  if ((data.yeni_tus_sorulari||[]).length) {
+    qEl.innerHTML = `<ul class="q-list">${data.yeni_tus_sorulari.map((q, qi) => `
+      <li class="q-item" id="nq${qi}">
+        <div class="q-text">${qi+1}. ${q.soru}</div>
+        <ul class="q-opts">${(q.secenekler||[]).map((o, oi) => `
+          <li class="q-opt" onclick="answerQ('nq${qi}',${oi},'${q.dogru}',\`${(q.aciklama||'').replace(/`/g,"'")}\`)">${o}</li>`).join('')}
+        </ul>
+        <div class="q-exp" id="nqexp${qi}">${q.aciklama||''}</div>
+      </li>`).join('')}</ul>`;
+  } else {
+    qEl.innerHTML = '<div class="empty-state"><span class="empty-icon">❓</span>Soru üretimi seçilmedi.</div>';
+  }
+
+  document.getElementById('analyzeResults').style.display = 'block';
+  document.getElementById('analyzeResults').scrollIntoView({ behavior: 'smooth' });
+  document.getElementById('analyzeBtn').disabled = false;
+}
+
+function answerQ(qId, oi, correct, explanation) {
+  const qEl = document.getElementById(qId);
+  const options = qEl.querySelectorAll('.q-opt');
+  const letters = ['A','B','C','D','E'];
+  options.forEach((o, i) => {
+    o.classList.remove('correct','wrong');
+    if (letters[i] === correct) o.classList.add('correct');
+    else if (i === oi) o.classList.add('wrong');
+    o.style.pointerEvents = 'none';
+  });
+  const expId = qId.replace('nq','nqexp');
+  const expEl = document.getElementById(expId);
+  if (expEl) expEl.style.display = 'block';
+}
+
+function switchTab(name, el) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('rtab-' + name).classList.add('active');
+}
+
+function setAnalyzeInfo(t) { document.getElementById('analyzeInfo').textContent = t; }
+function setAnalyzeProg(p) { document.getElementById('analyzeProgBar').style.width = p + '%'; }
+function setAStep(id, state) {
+  const el = document.getElementById('astep' + id);
+  if (!el) return;
+  el.className = 'step-item ' + state;
+  if (state === 'done') el.querySelector('.step-dot').textContent = '✓';
+}
+
+function resetAnalysis() {
+  clearSlideFile();
+  document.getElementById('analyzeResults').style.display = 'none';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function copyResults() {
+  const items = document.querySelectorAll('#rtab-ozet .s-item span:last-child');
+  let text = 'ÖZET:\n';
+  items.forEach(i => text += '• ' + i.textContent + '\n');
+  navigator.clipboard.writeText(text).then(() => alert('Kopyalandı!'));
+}
+
+// ── HELPERS ──
+async function pdfToText(file, perPage = false) {
+  const buf = await file.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+  const pages = [];
+  for (let i = 1; i <= pdf.numPages; i++) {
+    const page = await pdf.getPage(i);
+    const content = await page.getTextContent();
+    pages.push(content.items.map(it => it.str).join(' '));
+  }
+  return perPage ? pages : pages.join('\n');
+}
+
+function chunkText(text, size) {
+  const chunks = [];
+  for (let i = 0; i < text.length; i += size) chunks.push(text.slice(i, i + size));
+  return chunks;
+}
+
+async function callAPI(prompt, maxTokens = 2000) {
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: maxTokens,
+      messages: [{ role: 'user', content: prompt }]
+    })
+  });
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.error?.message || 'API Hatası ' + res.status);
+  }
+  const data = await res.json();
+  return data.content[0]?.text || '{}';
+}
+
+function safeParseJSON(text) {
+  try {
+    const match = text.match(/\{[\s\S]*\}/);
+    return match ? JSON.parse(match[0]) : null;
+  } catch { return null; }
+}
+
+function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
+</script>
+
+</body>
+</html>
